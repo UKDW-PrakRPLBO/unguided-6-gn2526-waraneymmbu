@@ -3,10 +3,7 @@ package org.rplbo.app.Manager;
 import org.rplbo.app.DBConnectionManager;
 import org.rplbo.app.Data.RekamMedis;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,28 +41,98 @@ public class RekamMedisManager {
     // TODO LENGKAPILAH SETIAP METHOD YANG KOSONG DIBAWAH INI
     // --- 1. CREATE (Tambah Rekam Medis) ---
     public boolean tambahRekamMedis(String namaDokter,String namaPasien, String diagnosis, String tanggal) {
+        try {
+//            statement =connection.createStatement();
+            String query = "insert into rekam_medis (nama_pasien, nama_dokter, diagnosis, tanggal) values (?, ?, ?, ?)";
+            PreparedStatement myStmt = connection.prepareStatement(query);
+            myStmt.setString(1, namaPasien);
+            myStmt.setString(2, namaDokter);
+            myStmt.setString(3, diagnosis);
+            myStmt.setString(4, tanggal);
+            int check = myStmt.executeUpdate();
+            if (check == 1) {
+                return true;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return false;
     }
 
     // --- 2. READ ALL ---
     public List<RekamMedis> getAllRekamMedis() {
         List<RekamMedis> rekamMedisList = new ArrayList<>();
+        try {
+            String query = "select * from rekam_medis";
+            PreparedStatement myStmt = connection.prepareStatement(query);
+            ResultSet myRs = myStmt.executeQuery();
+            while (myRs.next()) {
+                int id = myRs.getInt("id");
+                String namaPasien = myRs.getString("nama_pasien");
+                String namaDokter = myRs.getString("nama_dokter");
+                String diagnosa = myRs.getString("diagnosis");
+                String tanggal = myRs.getString("tanggal");
+                RekamMedis rm = new RekamMedis(id, namaPasien, diagnosa, tanggal, namaDokter);
+                rekamMedisList.add(rm);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
         return rekamMedisList;
     }
 
     // --- 3. UPDATE ---
     public boolean editRekamMedis(int idRekamMedis, String diagnosisBaru) {
-        return false;
+        try {
+            String query = "update rekam_medis set diagnosis = ? where id = ?";
+            PreparedStatement myStmt = connection.prepareStatement(query);
+            myStmt.setString(1, diagnosisBaru);
+            myStmt.setInt(2, idRekamMedis);
+            int check = myStmt.executeUpdate();
+            if (check == 1) {
+                return true;
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return true;
     }
 
     // --- 4. DELETE ---
     public boolean hapusRekamMedis(int idRekamMedis) {
+        try {
+            String query = "delete from rekam_medis where id = ?";
+            PreparedStatement myStmt = connection.prepareStatement(query);
+            myStmt.setInt(1, idRekamMedis);
+            int check = myStmt.executeUpdate();
+            if (check == 1) {
+                return true;
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
         return false;
     }
-
     // --- 5. READ ---
     public List<RekamMedis> cariRekamMedisPasien(String nama) {
         List<RekamMedis> resultList = new ArrayList<>();
+        try {
+            String query = "select * from rekam_medis where nama_pasien = ?";
+            PreparedStatement myStmt = connection.prepareStatement(query);
+            myStmt.setString(1, nama);
+            ResultSet myRs =  myStmt.executeQuery();
+            while (myRs.next()) {
+                int id = myRs.getInt("id");
+                String namaPasien = myRs.getString("nama_pasien");
+                String namaDokter = myRs.getString("nama_dokter");
+                String diagnosa = myRs.getString("diagnosis");
+                String tanggal = myRs.getString("tanggal");
+                RekamMedis rm = new RekamMedis(id, namaPasien, diagnosa, tanggal, namaDokter);
+                resultList.add(rm);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
         return resultList;
     }
 }
